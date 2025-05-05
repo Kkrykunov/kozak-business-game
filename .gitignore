@@ -42,3 +42,6 @@ Thumbs.db
 .vscode/
 *.swp
 *.swo
+
+# Claude technical files
+.claude/
