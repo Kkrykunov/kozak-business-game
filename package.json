@@ -1,0 +1,50 @@
+{
+  "name": "kozak-business-game",
+  "version": "1.0.0",
+  "description": "Kozak Business Game - Blockchain game with NFT mechanics",
+  "main": "index.js",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "coverage": "hardhat coverage",
+    "deploy:sepolia": "hardhat run scripts/deploy.ts --network sepolia",
+    "deploy:whitechain": "hardhat run scripts/deploy.ts --network whitechain",
+    "verify:sepolia": "hardhat run scripts/verify.ts --network sepolia",
+    "verify:whitechain": "hardhat run scripts/verify.ts --network whitechain",
+    "node": "hardhat node",
+    "docs": "hardhat docgen"
+  },
+  "keywords": [
+    "hardhat",
+    "blockchain",
+    "ethereum",
+    "nft",
+    "web3",
+    "game"
+  ],
+  "author": "WhiteBIT Student",
+  "license": "MIT",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-chai-matchers": "^2.0.0",
+    "@nomicfoundation/hardhat-network-helpers": "^1.0.0",
+    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "@nomicfoundation/hardhat-verify": "^2.0.0",
+    "@openzeppelin/contracts": "^5.3.0",
+    "@openzeppelin/hardhat-upgrades": "^3.0.0",
+    "@typechain/ethers-v6": "^0.5.0",
+    "@typechain/hardhat": "^9.0.0",
+    "@types/chai": "^4.3.4",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "^18.15.0",
+    "chai": "^4.3.7",
+    "dotenv": "^16.0.3",
+    "ethers": "^6.9.0",
+    "hardhat": "^2.19.0",
+    "hardhat-gas-reporter": "^1.0.9",
+    "solidity-coverage": "^0.8.5",
+    "solidity-docgen": "^0.6.0-beta.36",
+    "ts-node": "^10.9.0",
+    "typechain": "^8.3.0",
+    "typescript": "^5.0.0"
+  }
+}

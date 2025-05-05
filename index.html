@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Козацький Бізнес - Game Interface</title>
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        button { 
+            padding: 10px 20px; 
+            margin: 5px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:disabled { background: #cccccc; }
+        .section { margin: 20px 0; padding: 10px; border: 1px solid #ddd; }
+        .resources { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .resource { padding: 10px; background: #f5f5f5; text-align: center; }
+        #status { color: green; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Козацький Бізнес</h1>
+        <div id="status">Status: Not connected</div>
+        
+        <div class="section">
+            <h2>Web3 Wallet</h2>
+            <button onclick="connectWallet()">Увійти через Web3</button>
+            <p>Address: <span id="address">Not connected</span></p>
+        </div>
+
+        <div class="section">
+            <h2>Resources</h2>
+            <button onclick="searchResources()">Search Resources</button>
+            <div class="resources" id="resources">
+                <div class="resource">Wood: <span id="wood">0</span></div>
+                <div class="resource">Iron: <span id="iron">0</span></div>
+                <div class="resource">Gold: <span id="gold">0</span></div>
+                <div class="resource">Leather: <span id="leather">0</span></div>
+                <div class="resource">Stone: <span id="stone">0</span></div>
+                <div class="resource">Diamond: <span id="diamond">0</span></div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Crafting</h2>
+            <button onclick="craftItem(0)">Craft Kozak Sword</button>
+            <button onclick="craftItem(1)">Craft Elder Staff</button>
+            <button onclick="craftItem(2)">Craft Kharakternik Armor</button>
+            <button onclick="craftItem(3)">Craft Battle Bracelet</button>
+        </div>
+
+        <div class="section">
+            <h2>Items</h2>
+            <button onclick="checkItems()">Check Your Items</button>
+            <div id="items"></div>
+        </div>
+
+        <div class="section">
+            <h2>Magic Tokens</h2>
+            <p>Balance: <span id="magicBalance">0</span> MTK</p>
+        </div>
+    </div>
+
+    <script>
+        // Contract addresses
+        const ADDRESSES = {
+            resourceNFT: '0xD68d3E923Fd331920B02322F1e8619c90d7Bc49a',
+            itemNFT: '0xb965A843069b22107dD42E0Dc616AE1AAb1D374f',
+            magicToken: '0x5d61c7c84f651E88DC69F3184b5600EFAbAF7564',
+            gameMechanics: '0x3804fccfA1eeC5bCfF9CE3A57bf8398429ceea87',
+            marketplace: '0x3AD2Dc9Eb75C38340c5176B41460C707D3b80009'
+        };
+
+        // Contract ABIs (add simplified ABIs)
+        const ABIS = {
+            resourceNFT: [
+                "function balanceOf(address account, uint256 id) view returns (uint256)"
+            ],
+            gameMechanics: [
+                "function searchResources()",
+                "function craftItem(uint8 itemType)"
+            ],
+            itemNFT: [
+                "function balanceOf(address owner) view returns (uint256)",
+                "function tokenOfOwnerByIndex(address owner, uint256 index) view returns (uint256)"
+            ],
+            magicToken: [
+                "function balanceOf(address account) view returns (uint256)"
+            ]
+        };
+
+        let web3;
+        let account;
+        let contracts = {};
+
+        async function connectWallet() {
+            if (window.ethereum) {
+                try {
+                    web3 = new Web3(window.ethereum);
+                    const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+                    account = accounts[0];
+                    document.getElementById('address').textContent = account;
+                    document.getElementById('status').textContent = "Status: Connected";
+                    
+                    // Initialize contracts
+                    contracts.resourceNFT = new web3.eth.Contract(ABIS.resourceNFT, ADDRESSES.resourceNFT);
+                    contracts.gameMechanics = new web3.eth.Contract(ABIS.gameMechanics, ADDRESSES.gameMechanics);
+                    contracts.itemNFT = new web3.eth.Contract(ABIS.itemNFT, ADDRESSES.itemNFT);
+                    contracts.magicToken = new web3.eth.Contract(ABIS.magicToken, ADDRESSES.magicToken);
+                    
+                    checkResources();
+                    checkBalance();
+                } catch (error) {
+                    console.error('Error connecting to MetaMask:', error);
+                    document.getElementById('status').textContent = "Error: " + error.message;
+                }
+            } else {
+                alert('Please install MetaMask!');
+            }
+        }
+
+        async function searchResources() {
+            try {
+                await contracts.gameMechanics.methods.searchResources().send({ from: account });
+                document.getElementById('status').textContent = "Resources found!";
+                checkResources();
+            } catch (error) {
+                document.getElementById('status').textContent = "Error: " + error.message;
+            }
+        }
+
+        async function checkResources() {
+            const resources = ['wood', 'iron', 'gold', 'leather', 'stone', 'diamond'];
+            
+            for (let i = 0; i < resources.length; i++) {
+                const balance = await contracts.resourceNFT.methods.balanceOf(account, i).call();
+                document.getElementById(resources[i]).textContent = balance;
+            }
+        }
+
+        async function craftItem(itemType) {
+            try {
+                await contracts.gameMechanics.methods.craftItem(itemType).send({ from: account });
+                document.getElementById('status').textContent = "Item crafted!";
+                checkResources();
+                checkItems();
+            } catch (error) {
+                document.getElementById('status').textContent = "Error: " + error.message;
+            }
+        }
+
+        async function checkItems() {
+            try {
+                const balance = await contracts.itemNFT.methods.balanceOf(account).call();
+                document.getElementById('items').innerHTML = `You have ${balance} item(s)`;
+            } catch (error) {
+                document.getElementById('items').innerHTML = "Error checking items";
+            }
+        }
+
+        async function checkBalance() {
+            try {
+                const balance = await contracts.magicToken.methods.balanceOf(account).call();
+                document.getElementById('magicBalance').textContent = web3.utils.fromWei(balance, 'ether');
+            } catch (error) {
+                console.error('Error checking balance:', error);
+            }
+        }
+    </script>
+</body>
+</html>
